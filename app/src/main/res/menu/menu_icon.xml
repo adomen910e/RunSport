@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/profile_icon"
+        android:title="Profil"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/option_course"
+        android:title="Course"
+        android:icon="@drawable/icon"
+        app:showAsAction="ifRoom">
+
+        <menu android:id="@+id/sousmenu">
+            <item
+                android:id="@+id/demarrer"
+                android:menuCategory="alternative"
+                android:title="@string/dem" />
+
+            <item
+                android:id="@+id/stats"
+                android:menuCategory="alternative"
+                android:title="@string/stat" />
+        </menu>
+
+    </item>
+
+
+    <item
+        android:id="@+id/quitter"
+        android:icon="@android:drawable/ic_delete"
+        android:title="Quitter"
+        app:showAsAction="ifRoom" />
+
+
+    <!--        <item-->
+    <!--            android:id="@+id/action_refresh"-->
+    <!--            android:orderInCategory="100"-->
+    <!--            android:icon="@drawable/ic_notification"-->
+    <!--            android:title="Refresh"-->
+    <!--            app:showAsAction="always" />-->
+    <!--        <item-->
+    <!--            android:id="@+id/action_settings"-->
+    <!--            android:title="Settings">-->
+    <!--        </item>-->
+
+</menu>
+

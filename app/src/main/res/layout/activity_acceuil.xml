@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/design_default_color_on_primary"
+    tools:context=".Acceuil">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+
+            android:id="@+id/circle_vitesse_max"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="208dp"
+            android:layout_height="205dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="50dp"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="25"
+            android:progressDrawable="@drawable/circular"
+            android:secondaryProgress="100"
+            app:layout_constraintEnd_toStartOf="@+id/circle_vitesse_moy"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView11" />
+
+        <ProgressBar
+
+            android:id="@+id/circle_distance"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="208dp"
+            android:layout_height="205dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="25"
+            android:progressDrawable="@drawable/circular"
+            android:secondaryProgress="100"
+            app:layout_constraintEnd_toStartOf="@+id/circle_vitesse_moy"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/circle_vitesse_max" />
+
+        <ProgressBar
+
+            android:id="@+id/circle_vitesse_moy"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="208dp"
+            android:layout_height="205dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="50dp"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="25"
+            android:progressDrawable="@drawable/circular"
+            android:secondaryProgress="100"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/circle_vitesse_max"
+            app:layout_constraintTop_toBottomOf="@+id/textView11" />
+
+        <ProgressBar
+
+            android:id="@+id/circle_time"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="208dp"
+            android:layout_height="205dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="25"
+            android:progressDrawable="@drawable/circular"
+            android:secondaryProgress="100"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/circle_vitesse_max"
+            app:layout_constraintTop_toBottomOf="@+id/circle_vitesse_moy" />
+
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="STATISTIQUES DERNIERE COURSE"
+            android:textColor="@color/colorPrimary"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vitesse Maximale (km/h)"
+            app:layout_constraintEnd_toEndOf="@+id/circle_vitesse_max"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/circle_vitesse_max" />
+
+        <TextView
+            android:id="@+id/textView13"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vitesse Moyenne (km/h)"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/circle_vitesse_moy"
+            app:layout_constraintTop_toTopOf="@+id/circle_vitesse_moy" />
+
+        <TextView
+            android:id="@+id/textView14"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Distance Parcourue (km)"
+            app:layout_constraintEnd_toStartOf="@+id/circle_time"
+            app:layout_constraintStart_toStartOf="@+id/circle_distance"
+            app:layout_constraintTop_toTopOf="@+id/circle_distance" />
+
+        <TextView
+            android:id="@+id/textView15"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Temps Ecoulé (h:m:s)"
+            app:layout_constraintEnd_toEndOf="@+id/circle_time"
+            app:layout_constraintStart_toStartOf="@+id/circle_time"
+            app:layout_constraintTop_toTopOf="@+id/circle_time" />
+
+        <TextView
+            android:id="@+id/value_vitesse_max"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/textView14"
+            app:layout_constraintEnd_toStartOf="@+id/circle_vitesse_moy"
+            app:layout_constraintStart_toStartOf="@+id/circle_vitesse_max"
+            app:layout_constraintTop_toTopOf="@+id/circle_vitesse_max" />
+
+        <TextView
+            android:id="@+id/value_vitesse_moyenne"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/textView15"
+            app:layout_constraintEnd_toEndOf="@+id/circle_vitesse_moy"
+            app:layout_constraintStart_toStartOf="@+id/circle_vitesse_moy"
+            app:layout_constraintTop_toTopOf="@+id/circle_vitesse_moy" />
+
+        <TextView
+            android:id="@+id/value_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/circle_distance"
+            app:layout_constraintEnd_toStartOf="@+id/circle_time"
+            app:layout_constraintStart_toStartOf="@+id/circle_distance"
+            app:layout_constraintTop_toTopOf="@+id/circle_distance" />
+
+        <TextView
+            android:id="@+id/value_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/circle_time"
+            app:layout_constraintEnd_toEndOf="@+id/circle_time"
+            app:layout_constraintStart_toStartOf="@+id/circle_time"
+            app:layout_constraintTop_toTopOf="@+id/circle_time" />
+
+        <Button
+            android:id="@+id/mapShow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:onClick="showMap"
+            android:text="Montrer le parcours"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <fragment
+            android:id="@+id/fragment1"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="400dp"
+            android:layout_height="535dp"
+            app:layout_constraintBottom_toTopOf="@+id/mapShow"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView11" />
+
+        <TextView
+            android:id="@+id/textdate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vide"
+            android:textColor="@color/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView11" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</RelativeLayout>
