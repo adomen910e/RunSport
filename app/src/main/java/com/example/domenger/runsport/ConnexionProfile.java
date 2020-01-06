@@ -22,7 +22,7 @@ public class ConnexionProfile extends AppCompatActivity {
         db = new DbHandler(this);
     }
 
-    public void clickConnection(View view){
+    public void clickConnection(View view) {
 
         EditText user = findViewById(R.id.login);
         EditText mdp = findViewById(R.id.mdp);
@@ -34,9 +34,9 @@ public class ConnexionProfile extends AppCompatActivity {
         ArrayList<HashMap<String, String>> userList;
         userList = db.GetUsers();
 
-        for(int i=0; i<userList.size(); i++){
+        for (int i = 0; i < userList.size(); i++) {
             if (login.equals(userList.get(i).get("login"))) {
-                if (password.equals(userList.get(i).get("mdp"))){
+                if (password.equals(userList.get(i).get("mdp"))) {
                     AlertDialog alertDialog = new AlertDialog.Builder(ConnexionProfile.this).create();
                     alertDialog.setTitle("Succes");
                     alertDialog.setMessage("Bienvenue sur votre profil");

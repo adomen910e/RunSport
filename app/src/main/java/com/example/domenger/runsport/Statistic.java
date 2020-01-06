@@ -1,7 +1,9 @@
 package com.example.domenger.runsport;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,27 +17,38 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.DataPointInterface;
-import com.jjoe64.graphview.series.OnDataPointTapListener;
-import com.jjoe64.graphview.series.Series;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 
 public class Statistic extends AppCompatActivity {
 
-    private DbHandler db;
     private int index_profil;
     private ArrayList<HashMap<String, String>> courses;
     private boolean isSelectMax = true;
     private boolean isSelectMoy = true;
     private boolean isSelectDist = true;
     private boolean isSelectTime = true;
-    private GraphView graph;
-    private BarGraphSeries<DataPoint> maxSeries ;
-    private BarGraphSeries<DataPoint> moySeries ;
-    private BarGraphSeries<DataPoint> distSeries;
-    private BarGraphSeries<DataPoint> timeSeries;
+    private boolean isSelectDay = false;
+    private boolean isSelectAll = true;
+    private GraphView graphAll;
+
+    private BarGraphSeries<DataPoint> maxSeriesAll;
+    private BarGraphSeries<DataPoint> moySeriesAll;
+    private BarGraphSeries<DataPoint> distSeriesAll;
+    private BarGraphSeries<DataPoint> timeSeriesAll;
+
+    private BarGraphSeries<DataPoint> maxSeriesDay;
+    private BarGraphSeries<DataPoint> moySeriesDay;
+    private BarGraphSeries<DataPoint> distSeriesDay;
+    private BarGraphSeries<DataPoint> timeSeriesDay;
+
+    private Button btnDay;
+    private Button btnAll;
 
 
     @Override
@@ -47,25 +60,35 @@ public class Statistic extends AppCompatActivity {
         b = getIntent().getExtras();
 
         //get the id of the profile
+        assert b != null;
         index_profil = b.getInt("id_profil");
 
-        db = new DbHandler(this);
+        DbHandler db = new DbHandler(this);
         courses = db.GetCoursesFromUser(index_profil);
 
-        graph = (GraphView) findViewById(R.id.graph);
-        initGraphWithCourses(graph);
+        graphAll = findViewById(R.id.graph);
+        initGraphWithCourses(graphAll);
+        createSeriesDay();
 
 
         Button btnMax = findViewById(R.id.b_max);
         btnMax.setOnClickListener(v -> {
-            if (isSelectMax){
+            if (isSelectMax) {
                 isSelectMax = false;
-                graph.removeSeries(maxSeries);
+                if (isSelectAll) {
+                    graphAll.removeSeries(maxSeriesAll);
+                } else {
+                    graphAll.removeSeries(maxSeriesDay);
+                }
                 btnMax.setBackgroundColor(getResources().getColor(R.color.colorOf));
 
-            }else{
+            } else {
                 isSelectMax = true;
-                graph.addSeries(maxSeries);
+                if (isSelectAll) {
+                    graphAll.addSeries(maxSeriesAll);
+                } else {
+                    graphAll.addSeries(maxSeriesDay);
+                }
                 btnMax.setBackgroundColor(getResources().getColor(R.color.colorOn));
             }
 
@@ -73,14 +96,22 @@ public class Statistic extends AppCompatActivity {
 
         Button btnMoy = findViewById(R.id.b_moy);
         btnMoy.setOnClickListener(v -> {
-            if (isSelectMoy){
+            if (isSelectMoy) {
                 isSelectMoy = false;
-                graph.removeSeries(moySeries);
+                if (isSelectAll) {
+                    graphAll.removeSeries(moySeriesAll);
+                } else {
+                    graphAll.removeSeries(moySeriesDay);
+                }
                 btnMoy.setBackgroundColor(getResources().getColor(R.color.colorOf));
 
-            }else{
+            } else {
                 isSelectMoy = true;
-                graph.addSeries(moySeries);
+                if (isSelectAll) {
+                    graphAll.addSeries(moySeriesAll);
+                } else {
+                    graphAll.addSeries(moySeriesDay);
+                }
                 btnMoy.setBackgroundColor(getResources().getColor(R.color.colorOn));
             }
 
@@ -88,14 +119,22 @@ public class Statistic extends AppCompatActivity {
 
         Button btnDist = findViewById(R.id.b_dist);
         btnDist.setOnClickListener(v -> {
-            if (isSelectDist){
+            if (isSelectDist) {
                 isSelectDist = false;
-                graph.removeSeries(distSeries);
+                if (isSelectAll) {
+                    graphAll.removeSeries(distSeriesAll);
+                } else {
+                    graphAll.removeSeries(distSeriesDay);
+                }
                 btnDist.setBackgroundColor(getResources().getColor(R.color.colorOf));
 
-            }else{
+            } else {
                 isSelectDist = true;
-                graph.addSeries(distSeries);
+                if (isSelectAll) {
+                    graphAll.addSeries(distSeriesAll);
+                } else {
+                    graphAll.addSeries(distSeriesDay);
+                }
                 btnDist.setBackgroundColor(getResources().getColor(R.color.colorOn));
             }
 
@@ -103,225 +142,243 @@ public class Statistic extends AppCompatActivity {
 
         Button btnTime = findViewById(R.id.b_time);
         btnTime.setOnClickListener(v -> {
-            if (isSelectTime){
+            if (isSelectTime) {
                 isSelectTime = false;
-                graph.removeSeries(timeSeries);
+                if (isSelectAll) {
+                    graphAll.removeSeries(timeSeriesAll);
+                } else {
+                    graphAll.removeSeries(timeSeriesDay);
+                }
                 btnTime.setBackgroundColor(getResources().getColor(R.color.colorOf));
 
-            }else{
+            } else {
                 isSelectTime = true;
-                graph.addSeries(timeSeries);
+                if (isSelectAll) {
+                    graphAll.addSeries(timeSeriesAll);
+                } else {
+                    graphAll.addSeries(timeSeriesDay);
+                }
                 btnTime.setBackgroundColor(getResources().getColor(R.color.colorOn));
             }
 
         });
+
+        btnDay = findViewById(R.id.b_day);
+        btnDay.setOnClickListener(v -> {
+            if (!isSelectDay) {
+                isSelectAll = false;
+                isSelectDay = true;
+                btnDay.setBackgroundColor(getResources().getColor(R.color.colorOn));
+                btnAll.setBackgroundColor(getResources().getColor(R.color.colorOf));
+
+                graphAll.removeSeries(distSeriesAll);
+                graphAll.removeSeries(maxSeriesAll);
+                graphAll.removeSeries(moySeriesAll);
+                graphAll.removeSeries(timeSeriesAll);
+
+                if (isSelectDist) {
+                    graphAll.addSeries(distSeriesDay);
+                }
+
+                if (isSelectMax) {
+                    graphAll.addSeries(maxSeriesDay);
+                }
+
+                if (isSelectMoy) {
+                    graphAll.addSeries(moySeriesDay);
+                }
+
+                if (isSelectTime) {
+                    graphAll.addSeries(timeSeriesDay);
+                }
+            }
+
+        });
+
+        btnAll = findViewById(R.id.b_all);
+        btnAll.setOnClickListener(v -> {
+            if (!isSelectAll) {
+                isSelectDay = false;
+                isSelectAll = true;
+                btnAll.setBackgroundColor(getResources().getColor(R.color.colorOn));
+                btnDay.setBackgroundColor(getResources().getColor(R.color.colorOf));
+
+                graphAll.removeSeries(distSeriesDay);
+                graphAll.removeSeries(maxSeriesDay);
+                graphAll.removeSeries(moySeriesDay);
+                graphAll.removeSeries(timeSeriesDay);
+
+                if (isSelectDist) {
+                    graphAll.addSeries(distSeriesAll);
+                }
+
+                if (isSelectMax) {
+                    graphAll.addSeries(maxSeriesAll);
+                }
+
+                if (isSelectMoy) {
+                    graphAll.addSeries(moySeriesAll);
+                }
+
+                if (isSelectTime) {
+                    graphAll.addSeries(timeSeriesAll);
+                }
+            }
+
+        });
+    }
+
+    public void createSeriesDay() {
+        Calendar calendar = Calendar.getInstance();
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String date = dateFormat.format(calendar.getTime());
+
+        DataPoint[] maxDay = new DataPoint[courses.size() + 3];
+        DataPoint[] moyDay = new DataPoint[courses.size() + 3];
+        DataPoint[] distDay = new DataPoint[courses.size() + 3];
+        DataPoint[] timeDay = new DataPoint[courses.size() + 3];
+
+        maxDay[0] = new DataPoint(-10, 0);
+        moyDay[0] = new DataPoint(-10, 0);
+        distDay[0] = new DataPoint(-10, 0);
+        timeDay[0] = new DataPoint(-10, 0);
+
+        maxDay[1] = new DataPoint(0, 0);
+        moyDay[1] = new DataPoint(0, 0);
+        distDay[1] = new DataPoint(0, 0);
+        timeDay[1] = new DataPoint(0, 0);
+
+        int comptDay = 2;
+
+        for (int i = 0; i < courses.size(); i++) {
+            if (courses.get(i).get("date").equals(date)) {
+                float value_speed_max = Float.parseFloat(courses.get(i).get("speedmax"));
+                float value_speed_moy = Float.parseFloat(courses.get(i).get("speedmoy"));
+                float value_dist = Float.parseFloat(courses.get(i).get("distance"));
+                float value_time = Float.parseFloat(courses.get(i).get("time"));
+
+                maxDay[comptDay] = new DataPoint(comptDay - 1, value_speed_max);
+                moyDay[comptDay] = new DataPoint(comptDay - 1, value_speed_moy);
+                distDay[comptDay] = new DataPoint(comptDay - 1, value_dist / 1000);
+                timeDay[comptDay] = new DataPoint(comptDay - 1, value_time / 60);
+
+                comptDay++;
+            }
+        }
+
+        maxDay[comptDay] = new DataPoint(100, 0);
+        moyDay[comptDay] = new DataPoint(100, 0);
+        distDay[comptDay] = new DataPoint(100, 0);
+        timeDay[comptDay] = new DataPoint(100, 0);
+
+        maxSeriesDay = new BarGraphSeries<>(Arrays.copyOfRange(maxDay, 0, comptDay + 1));
+        moySeriesDay = new BarGraphSeries<>(Arrays.copyOfRange(moyDay, 0, comptDay + 1));
+        distSeriesDay = new BarGraphSeries<>(Arrays.copyOfRange(distDay, 0, comptDay + 1));
+        timeSeriesDay = new BarGraphSeries<>(Arrays.copyOfRange(timeDay, 0, comptDay + 1));
+
+        maxSeriesDay.setSpacing(40);
+        maxSeriesDay.setAnimated(true);
+        maxSeriesDay.setColor(Color.RED);
+
+        moySeriesDay.setSpacing(40);
+        moySeriesDay.setAnimated(true);
+        moySeriesDay.setColor(Color.CYAN);
+
+        distSeriesDay.setSpacing(40);
+        distSeriesDay.setAnimated(true);
+        distSeriesDay.setColor(Color.MAGENTA);
+
+        timeSeriesDay.setSpacing(40);
+        timeSeriesDay.setAnimated(true);
+        timeSeriesDay.setColor(Color.GREEN);
+
+        maxSeriesDay.setOnDataPointTapListener((series, dataPoint) -> Toast.makeText(graphAll.getContext(), "Vitesse Maximale: " + dataPoint.getY(), Toast.LENGTH_SHORT).show());
+
+        moySeriesDay.setOnDataPointTapListener((series, dataPoint) -> Toast.makeText(graphAll.getContext(), "Vitesse Moyenne: " + dataPoint.getY(), Toast.LENGTH_SHORT).show());
+
+        distSeriesDay.setOnDataPointTapListener((series, dataPoint) -> Toast.makeText(graphAll.getContext(), "Distance Parcourue: " + dataPoint.getY(), Toast.LENGTH_SHORT).show());
+
+        timeSeriesDay.setOnDataPointTapListener((series, dataPoint) -> {
+            LocalTime timeOfDay = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                timeOfDay = LocalTime.ofSecondOfDay((long) (dataPoint.getY() * 60));
+            }
+            assert timeOfDay != null;
+            String time = timeOfDay.toString();
+
+            Toast.makeText(graphAll.getContext(), "Temps Écoulé: " + time, Toast.LENGTH_SHORT).show();
+        });
+
+        // Legend
+        maxSeriesDay.setTitle("vitesse max");
+        moySeriesDay.setTitle("vitesse moyenne");
+        distSeriesDay.setTitle("distance");
+        timeSeriesDay.setTitle("temps");
+
     }
 
     public void initGraphWithCourses(GraphView graph) {
 
-            DataPoint max[] = new DataPoint[courses.size()+3];
-            DataPoint moy[] = new DataPoint[courses.size()+3];
-            DataPoint dist[] = new DataPoint[courses.size()+3];
-            DataPoint time[] = new DataPoint[courses.size()+3];
+        DataPoint[] maxAll = new DataPoint[courses.size() + 3];
+        DataPoint[] moyAll = new DataPoint[courses.size() + 3];
+        DataPoint[] distAll = new DataPoint[courses.size() + 3];
+        DataPoint[] timeAll = new DataPoint[courses.size() + 3];
 
-            max[0] = new DataPoint(-10, 0);
-            moy[0] = new DataPoint(-10, 0);
-            dist[0] = new DataPoint(-10, 0);
-            time[0] = new DataPoint(-10, 0);
+        maxAll[0] = new DataPoint(-10, 0);
+        moyAll[0] = new DataPoint(-10, 0);
+        distAll[0] = new DataPoint(-10, 0);
+        timeAll[0] = new DataPoint(-10, 0);
 
-            max[1] = new DataPoint(0, 0);
-            moy[1] = new DataPoint(0, 0);
-            dist[1] = new DataPoint(0, 0);
-            time[1] = new DataPoint(0, 0);
-
-
-
-            for (int i = 0; i < courses.size(); i++) {
-                float value_speed_max = Float.parseFloat(courses.get(i).get("speedmax"));
-                //Vitesse max 50 km/h
-                float VITESSE_MAX_CIRCLE = 50;
-                int Y_max = (int) (value_speed_max * 100 / VITESSE_MAX_CIRCLE);
-                max[i+2] = new DataPoint(i+1, Y_max);
-
-                float value_speed_moy = Float.parseFloat(courses.get(i).get("speedmoy"));
-                //Vitesse moyenne 50km/h
-                float VITESSE_MOY_CIRCLE = 50;
-                int Y_moy = (int) (value_speed_moy * 100 / VITESSE_MOY_CIRCLE);
-                moy[i+2] = new DataPoint(i+1, Y_moy);
-
-                float value_dist = Float.parseFloat(courses.get(i).get("distance"));
-                //Distance max 50 km
-                float DISTANCE_CIRCLE = 50;
-                int Y_dist = (int) (value_dist / 10 / DISTANCE_CIRCLE);
-                dist[i+2] = new DataPoint(i+1, Y_dist);
-
-                float value_time = Float.parseFloat(courses.get(i).get("time"));
-                //Temps de base max 1 heure
-                float TIME_CIRCLE = 3600;
-                int Y_time = (int) ((value_time * 100) / TIME_CIRCLE);
-                time[i+2] = new DataPoint(i+1, Y_time);
-            }
-
-            max[courses.size()+2] = new DataPoint(100, 0);
-            moy[courses.size()+2] = new DataPoint(100, 0);
-            dist[courses.size()+2] = new DataPoint(100, 0);
-            time[courses.size()+2] = new DataPoint(100, 0);
-
-            maxSeries = new BarGraphSeries<>(max);
-            moySeries = new BarGraphSeries<>(moy);
-            distSeries = new BarGraphSeries<>(dist);
-            timeSeries = new BarGraphSeries<>(time);
-
-            maxSeries.setSpacing(40);
-            maxSeries.setAnimated(true);
-            maxSeries.setColor(Color.RED);
-            graph.addSeries(maxSeries);
-
-            moySeries.setSpacing(40);
-            moySeries.setAnimated(true);
-            moySeries.setColor(Color.CYAN);
-            graph.addSeries(moySeries);
-
-            distSeries.setSpacing(40);
-            distSeries.setAnimated(true);
-            distSeries.setColor(Color.MAGENTA);
-            graph.addSeries(distSeries);
-
-            timeSeries.setSpacing(40);
-            timeSeries.setAnimated(true);
-            timeSeries.setColor(Color.GREEN);
-            graph.addSeries(timeSeries);
-
-            graph.getViewport().setXAxisBoundsManual(true);
-            graph.getViewport().setMinX(0);
-            graph.getViewport().setMaxX(6);
-            graph.getGridLabelRenderer().setNumHorizontalLabels(7);
-            graph.getViewport().setScrollable(true);
-            graph.getViewport().setScalable(true);
-
-            maxSeries.setOnDataPointTapListener(new OnDataPointTapListener() {
-                @Override
-                public void onTap(Series series, DataPointInterface dataPoint) {
-                    Toast.makeText(graph.getContext(), "Series1: On Data Point clicked: " + dataPoint, Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            moySeries.setOnDataPointTapListener(new OnDataPointTapListener() {
-                @Override
-                public void onTap(Series series, DataPointInterface dataPoint) {
-                    Toast.makeText(graph.getContext(), "Series2: On Data Point clicked: " + dataPoint, Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            distSeries.setOnDataPointTapListener(new OnDataPointTapListener() {
-                @Override
-                public void onTap(Series series, DataPointInterface dataPoint) {
-                    Toast.makeText(graph.getContext(), "Series3: On Data Point clicked: " + dataPoint, Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            timeSeries.setOnDataPointTapListener(new OnDataPointTapListener() {
-                @Override
-                public void onTap(Series series, DataPointInterface dataPoint) {
-                    Toast.makeText(graph.getContext(), "Series4: On Data Point clicked: " + dataPoint, Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            // legend
-            maxSeries.setTitle("vitesse max");
-            moySeries.setTitle("vitesse moyenne");
-            distSeries.setTitle("distance");
-            timeSeries.setTitle("temps");
-
-            graph.getLegendRenderer().setVisible(true);
-            graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
-//    }
-    }
-
-    public int get_percent_max(int value){
-        return 0;
-
-    }
-
-    public int get_percent_moy(int value){
-        return 0;
-    }
-
-    public int get_percent_dist(int value){
-        return 0;
-    }
-
-    public int get_percent_temps(int value){
-        return 0;
-    }
-
-    public void initGraph(GraphView graph) {
+        maxAll[1] = new DataPoint(0, 0);
+        moyAll[1] = new DataPoint(0, 0);
+        distAll[1] = new DataPoint(0, 0);
+        timeAll[1] = new DataPoint(0, 0);
 
 
+        for (int i = 0; i < courses.size(); i++) {
+            float value_speed_max = Float.parseFloat(courses.get(i).get("speedmax"));
+            maxAll[i + 2] = new DataPoint(i + 1, value_speed_max);
 
-        BarGraphSeries<DataPoint> series = new BarGraphSeries<>(new DataPoint[] {
-                //LIMITS SCROLLING
-                new DataPoint(-10, 0),
-                new DataPoint(100, 0),
+            float value_speed_moy = Float.parseFloat(courses.get(i).get("speedmoy"));
+            moyAll[i + 2] = new DataPoint(i + 1, value_speed_moy);
 
-                new DataPoint(1, 5),
-                new DataPoint(2, 3),
-                new DataPoint(3, 2),
-                new DataPoint(4, 6),
-                new DataPoint(5, 5),
-                new DataPoint(6, 3),
-                new DataPoint(7, 2),
-                new DataPoint(8, 6)
-        });
-        series.setSpacing(40);
-        series.setAnimated(true);
-        graph.addSeries(series);
+            float value_dist = Float.parseFloat(courses.get(i).get("distance"));
+            distAll[i + 2] = new DataPoint(i + 1, value_dist / 1000);
 
-        BarGraphSeries<DataPoint> series2 = new BarGraphSeries<>(new DataPoint[] {
-                new DataPoint(1, 3),
-                new DataPoint(2, 4),
-                new DataPoint(3, 4),
-                new DataPoint(4, 1),
-                new DataPoint(5, 5),
-                new DataPoint(6, 3),
-                new DataPoint(7, 2),
-                new DataPoint(8, 6)
-        });
-        series2.setColor(Color.RED);
-        series2.setSpacing(40);
-        series2.setAnimated(true);
-        graph.addSeries(series2);
+            float value_time = Float.parseFloat(courses.get(i).get("time"));
+            timeAll[i + 2] = new DataPoint(i + 1, value_time / 60);
 
-        BarGraphSeries<DataPoint> series3 = new BarGraphSeries<>(new DataPoint[] {
-                new DataPoint(1, 5),
-                new DataPoint(2, 3),
-                new DataPoint(3, 2),
-                new DataPoint(4, 6),
-                new DataPoint(5, 5),
-                new DataPoint(6, 3),
-                new DataPoint(7, 2),
-                new DataPoint(8, 6)
-        });
-        series3.setColor(Color.GREEN);
-        series3.setSpacing(40);
-        series3.setAnimated(true);
-        graph.addSeries(series3);
+        }
 
-        BarGraphSeries<DataPoint> series4 = new BarGraphSeries<>(new DataPoint[] {
-                new DataPoint(1, 5),
-                new DataPoint(2, 3),
-                new DataPoint(3, 2),
-                new DataPoint(4, 6),
-                new DataPoint(5, 5),
-                new DataPoint(6, 3),
-                new DataPoint(7, 2),
-                new DataPoint(8, 6)
-        });
-        series4.setColor(Color.MAGENTA);
-        series4.setSpacing(40);
-        series4.setAnimated(true);
-        graph.addSeries(series4);
+        maxAll[courses.size() + 2] = new DataPoint(100, 0);
+        moyAll[courses.size() + 2] = new DataPoint(100, 0);
+        distAll[courses.size() + 2] = new DataPoint(100, 0);
+        timeAll[courses.size() + 2] = new DataPoint(100, 0);
 
+        maxSeriesAll = new BarGraphSeries<>(maxAll);
+        moySeriesAll = new BarGraphSeries<>(moyAll);
+        distSeriesAll = new BarGraphSeries<>(distAll);
+        timeSeriesAll = new BarGraphSeries<>(timeAll);
+
+        maxSeriesAll.setSpacing(40);
+        maxSeriesAll.setAnimated(true);
+        maxSeriesAll.setColor(Color.RED);
+        graph.addSeries(maxSeriesAll);
+
+        moySeriesAll.setSpacing(40);
+        moySeriesAll.setAnimated(true);
+        moySeriesAll.setColor(Color.CYAN);
+        graph.addSeries(moySeriesAll);
+
+        distSeriesAll.setSpacing(40);
+        distSeriesAll.setAnimated(true);
+        distSeriesAll.setColor(Color.MAGENTA);
+        graph.addSeries(distSeriesAll);
+
+        timeSeriesAll.setSpacing(40);
+        timeSeriesAll.setAnimated(true);
+        timeSeriesAll.setColor(Color.GREEN);
+        graph.addSeries(timeSeriesAll);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
@@ -330,44 +387,33 @@ public class Statistic extends AppCompatActivity {
         graph.getViewport().setScrollable(true);
         graph.getViewport().setScalable(true);
 
-        series.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(graph.getContext(), "Series1: On Data Point clicked: "+dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
+        maxSeriesAll.setOnDataPointTapListener((series, dataPoint) -> Toast.makeText(graph.getContext(), "Vitesse Maximale: " + dataPoint.getY(), Toast.LENGTH_SHORT).show());
 
-        series2.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(graph.getContext(), "Series2: On Data Point clicked: "+dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
+        moySeriesAll.setOnDataPointTapListener((series, dataPoint) -> Toast.makeText(graph.getContext(), "Vitesse Moyenne: " + dataPoint.getY(), Toast.LENGTH_SHORT).show());
 
-        series3.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(graph.getContext(), "Series3: On Data Point clicked: "+dataPoint, Toast.LENGTH_SHORT).show();
-            }
-        });
+        distSeriesAll.setOnDataPointTapListener((series, dataPoint) -> Toast.makeText(graph.getContext(), "Distance Parcourue: " + dataPoint.getY(), Toast.LENGTH_SHORT).show());
 
-        series4.setOnDataPointTapListener(new OnDataPointTapListener() {
-            @Override
-            public void onTap(Series series, DataPointInterface dataPoint) {
-                Toast.makeText(graph.getContext(), "Series4: On Data Point clicked: "+dataPoint, Toast.LENGTH_SHORT).show();
+        timeSeriesAll.setOnDataPointTapListener((series, dataPoint) -> {
+            LocalTime timeOfDay = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                timeOfDay = LocalTime.ofSecondOfDay((long) (dataPoint.getY() * 60));
             }
+            assert timeOfDay != null;
+            String time = timeOfDay.toString();
+
+            Toast.makeText(graph.getContext(), "Temps Écoulé: " + time, Toast.LENGTH_SHORT).show();
         });
 
         // legend
-        series.setTitle("vitesse max");
-        series2.setTitle("vitesse moyenne");
-        series3.setTitle("distance");
-        series4.setTitle("temps");
+        maxSeriesAll.setTitle("vitesse max");
+        moySeriesAll.setTitle("vitesse moyenne");
+        distSeriesAll.setTitle("distance");
+        timeSeriesAll.setTitle("temps");
 
         graph.getLegendRenderer().setVisible(true);
         graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
-
     }
+
 
     @Override
     //Méthode qui se déclenchera lorsque vous appuierez sur le bouton menu du téléphone

@@ -9,8 +9,10 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -51,7 +53,6 @@ public class Course extends AppCompatActivity
 
     private String data_course;
     private ArrayList<Float> vitesse_moy = new ArrayList<>();
-    private ArrayList<Polyline> lineArray = new ArrayList<>();
     private float vitesse_max = 0;
     private float moyenne = 0;
     private float distance = 0;
@@ -60,7 +61,6 @@ public class Course extends AppCompatActivity
     private double wayLatitude = 0.0, wayLongitude = 0.0;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
-    private TextView txtContinueLocation;
     private StringBuilder stringBuilder;
     private Button btnContinueLocation;
     private Button btnEndLocation;
@@ -70,15 +70,17 @@ public class Course extends AppCompatActivity
     private boolean isGPS = false;
 
     private GoogleMap mMap;
-    private MarkerOptions markerOption;
     private PolylineOptions polylineOption;
     private Polyline line;
     private Marker markerOnMap;
+
+    private boolean isRunning = false;
 
 
     private long startTime;
 
 
+    @SuppressLint({"SetTextI18n", "SimpleDateFormat"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,10 +94,10 @@ public class Course extends AppCompatActivity
 
         dbHandler = new DbHandler(Course.this);
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat dateFormat;
+        dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         date = dateFormat.format(calendar.getTime());
 
-        this.txtContinueLocation = findViewById(R.id.txtContinueLocation);
         btnContinueLocation = findViewById(R.id.btnContinueLocation);
         btnEndLocation = findViewById(R.id.btnEndLocation);
         clear_marker = false;
@@ -135,7 +137,7 @@ public class Course extends AppCompatActivity
                                 speed = location.getSpeed();
                             }
 
-                            if (polylineOption == null){
+                            if (polylineOption == null) {
                                 polylineOption = new PolylineOptions()
                                         .add(new LatLng(location.getLatitude(), location.getLongitude()))
                                         .width(8)
@@ -169,8 +171,6 @@ public class Course extends AppCompatActivity
                             vitesse_max = speed;
                         }
 
-
-                        txtContinueLocation.setText(stringBuilder.toString());
                         addMarker();
 
                         if (!isContinue && mFusedLocationClient != null) {
@@ -182,71 +182,75 @@ public class Course extends AppCompatActivity
         };
 
         btnContinueLocation.setOnClickListener(v -> {
-            if (!isGPS) {
-                Toast.makeText(this, "Please turn on GPS", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (clear_marker) {
-                mMap.clear();
-                vitesse_moy.clear();
-                vitesse_max = 0;
-                distance = 0;
-            }
+            if (!isRunning) {
+                if (!isGPS) {
+                    Toast.makeText(this, "Please turn on GPS", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (clear_marker) {
+                    mMap.clear();
+                    vitesse_moy.clear();
+                    vitesse_max = 0;
+                    distance = 0;
+                }
 
-            startTime = System.currentTimeMillis();
-            this.btnContinueLocation.setBackgroundColor(0xFF48FF00);
-            this.btnContinueLocation.setTextColor(0xFF000000);
-            this.btnEndLocation.setBackgroundColor(0xFF48FF00);
-            this.btnEndLocation.setTextColor(0xFF000000);
-            isContinue = true;
-            getLocation();
+                startTime = System.currentTimeMillis();
+                this.btnContinueLocation.setBackgroundColor(0xFF48FF00);
+                this.btnContinueLocation.setTextColor(0xFF000000);
+                this.btnEndLocation.setBackgroundColor(0xFF48FF00);
+                this.btnEndLocation.setTextColor(0xFF000000);
+                isContinue = true;
+                getLocation();
+
+                isRunning = true;
+            }
         });
 
         btnEndLocation.setOnClickListener(v -> {
-            if (!isGPS) {
-                Toast.makeText(this, "Please turn on GPS", Toast.LENGTH_SHORT).show();
-                return;
+            if (isRunning) {
+                if (!isGPS) {
+                    Toast.makeText(this, "Please turn on GPS", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                this.btnContinueLocation.setBackgroundColor(0xFFD50000);
+                this.btnContinueLocation.setTextColor(0xFFFFFFFF);
+                this.btnContinueLocation.setText("Nouvelle course");
+                this.btnEndLocation.setBackgroundColor(0xFFD50000);
+                this.btnEndLocation.setTextColor(0xFFFFFFFF);
+
+                clear_marker = true;
+
+                float somme = 0;
+                for (int i = 0; i < vitesse_moy.size(); i++) {
+                    somme = somme + vitesse_moy.get(i);
+                }
+                moyenne = somme / vitesse_moy.size();
+
+                isContinue = false;
+                stringBuilder = new StringBuilder();
+                getLocation();
+
+                long difference = System.currentTimeMillis() - startTime;
+
+                String array_point = parsePointLine();
+
+                dbHandler.insertCoursesDetails(id_user, Float.toString(vitesse_max),
+                        Float.toString(moyenne), Float.toString(distance), Long.toString(difference / 1000), date, array_point);
+
+                AlertDialog alertDialog = new AlertDialog.Builder(Course.this).create();
+                alertDialog.setTitle("Enregistrement course");
+                alertDialog.setMessage("Votre course a bien été enregistrée");
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        (dialog, which) -> {
+                            dialog.dismiss();
+                            Intent intent = new Intent(Course.this, Acceuil.class);
+                            intent.putExtra("id_profil", id_user);
+                            startActivity(intent);
+                            finish();
+                        });
+                alertDialog.show();
             }
-
-            this.btnContinueLocation.setBackgroundColor(0xFFD50000);
-            this.btnContinueLocation.setTextColor(0xFFFFFFFF);
-            this.btnContinueLocation.setText("Nouvelle course");
-            this.btnEndLocation.setBackgroundColor(0xFFD50000);
-            this.btnEndLocation.setTextColor(0xFFFFFFFF);
-
-            clear_marker = true;
-
-            float somme = 0;
-            for (int i = 0; i < vitesse_moy.size(); i++) {
-                somme = somme + vitesse_moy.get(i);
-            }
-            moyenne = somme / vitesse_moy.size();
-
-            isContinue = false;
-            stringBuilder = new StringBuilder();
-            getLocation();
-
-            long difference = System.currentTimeMillis() - startTime;
-
-
-            //TODO: IL FAUT METTRE LES POINTS DANS LA BDD
-            String array_point = parsePointLine();
-
-            dbHandler.insertCoursesDetails(id_user, Float.toString(vitesse_max),
-                    Float.toString(moyenne), Float.toString(distance), Long.toString(difference / 1000), date, array_point);
-
-            AlertDialog alertDialog = new AlertDialog.Builder(Course.this).create();
-            alertDialog.setTitle("Enregistrement course");
-            alertDialog.setMessage("Votre course a bien été enregistrée");
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                    (dialog, which) -> {
-                        dialog.dismiss();
-                        Intent intent = new Intent(Course.this, Acceuil.class);
-                        intent.putExtra("id_profil", id_user);
-                        startActivity(intent);
-                        finish();
-                    });
-            alertDialog.show();
         });
 
         MapFragment mapFragment = (MapFragment) getFragmentManager()
@@ -255,13 +259,14 @@ public class Course extends AppCompatActivity
     }
 
     private String parsePointLine() {
-        String str_point = "";
-        List <LatLng> array_point = line.getPoints();
+        StringBuilder str_point;
+        str_point = new StringBuilder();
+        List<LatLng> array_point = line.getPoints();
 
-        for (int i=0; i<array_point.size(); i++){
-            str_point = str_point + "|" + array_point.get(i).latitude + ";" + array_point.get(i).longitude;
+        for (int i = 0; i < array_point.size(); i++) {
+            str_point.append("|").append(array_point.get(i).latitude).append(";").append(array_point.get(i).longitude);
         }
-        return str_point;
+        return str_point.toString();
 
     }
 
@@ -308,52 +313,13 @@ public class Course extends AppCompatActivity
         mMap = map;
     }
 
-//    @Override
-//    //Méthode qui se déclenchera lorsque vous appuierez sur le bouton menu du téléphone
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//
-//        //Création d'un MenuInflater qui va permettre d'instancier un Menu XML en un objet Menu
-//        MenuInflater inflater = getMenuInflater();
-//        //Instanciation du menu XML spécifier en un objet Menu
-//        inflater.inflate(R.menu.menu_acceuil, menu);
-//
-//        return true;
-//    }
-//
-//
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        //On regarde quel item a été cliqué grâce à son id et on déclenche une action
-//        Intent intent;
-//        switch (item.getItemId()) {
-//            case R.id.profile:
-//                Toast.makeText(Course.this, "Profile", Toast.LENGTH_SHORT).show();
-//                intent = new Intent(Course.this, Profil.class);
-//                startActivity(intent);
-//            case R.id.option_course:
-//                Toast.makeText(Course.this, "Course", Toast.LENGTH_SHORT).show();
-//                return true;
-//            case R.id.demarrer:
-//                Toast.makeText(Course.this, "Demarrer", Toast.LENGTH_SHORT).show();
-//                return true;
-//            case R.id.stats:
-//                Toast.makeText(Course.this, "Stats", Toast.LENGTH_SHORT).show();
-//                return true;
-//            case R.id.quitter:
-//                //Pour fermer l'application il suffit de faire finish()
-//                finish();
-//                return true;
-//        }
-//        return false;
-//    }
-
-
     public void addMarker() {
         LatLng pos = new LatLng(wayLatitude, wayLongitude);
 
-        if (markerOnMap == null){
-            markerOption = new MarkerOptions().position(pos).title("Moi");
+        if (markerOnMap == null) {
+            MarkerOptions markerOption = new MarkerOptions().position(pos).title("Moi");
             markerOnMap = mMap.addMarker(markerOption);
-        }else{
+        } else {
             markerOnMap.setPosition(pos);
         }
 
@@ -382,6 +348,64 @@ public class Course extends AppCompatActivity
     @Override
     public void onProviderDisabled(String s) {
 
+    }
+
+    @Override
+    //Méthode qui se déclenchera lorsque vous appuierez sur le bouton menu du téléphone
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        //Création d'un MenuInflater qui va permettre d'instancier un Menu XML en un objet Menu
+        MenuInflater inflater = getMenuInflater();
+        //Instanciation du menu XML spécifier en un objet Menu
+        inflater.inflate(R.menu.menu_icon, menu);
+
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //On regarde quel item a été cliqué grâce à son id et on déclenche une action
+        if (!isRunning) {
+            Intent intent;
+            switch (item.getItemId()) {
+                case R.id.profile:
+                    Toast.makeText(Course.this, "Profile", Toast.LENGTH_SHORT).show();
+                    intent = new Intent(Course.this, Profil.class);
+                    intent.putExtra("id_profil", this.id_user);
+                    startActivity(intent);
+                    finish();
+                case R.id.option_course:
+                    Toast.makeText(Course.this, "Course", Toast.LENGTH_SHORT).show();
+                    return true;
+                case R.id.demarrer:
+                    Toast.makeText(Course.this, "Demarrer", Toast.LENGTH_SHORT).show();
+                    intent = new Intent(Course.this, Course.class);
+                    intent.putExtra("id_profil", this.id_user);
+                    startActivity(intent);
+                    finish();
+                    return true;
+                case R.id.stats:
+                    Toast.makeText(Course.this, "Stats", Toast.LENGTH_SHORT).show();
+                    intent = new Intent(Course.this, Statistic.class);
+                    intent.putExtra("id_profil", this.id_user);
+                    startActivity(intent);
+                    finish();
+                    return true;
+                case R.id.quitter:
+                    //Pour fermer l'application il suffit de faire finish()
+                    finish();
+                    return true;
+            }
+            return false;
+        } else {
+            if (item.getItemId() == R.id.quitter) {
+                //Pour fermer l'application il suffit de faire finish()
+                finish();
+                return true;
+            } else {
+                Toast.makeText(Course.this, "Impossible une course est lancée", Toast.LENGTH_SHORT).show();
+            }
+        }
+        return false;
     }
 
 }

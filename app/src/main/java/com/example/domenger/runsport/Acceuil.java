@@ -33,7 +33,6 @@ public class Acceuil extends AppCompatActivity implements OnMapReadyCallback {
     private ArrayList<HashMap<String, String>> courses;
     private int index_profile;
     private GoogleMap mapa;
-    private View map;
     private PolylineOptions polylineOption;
     private SupportMapFragment mapFrag;
 
@@ -162,12 +161,6 @@ public class Acceuil extends AppCompatActivity implements OnMapReadyCallback {
             }
 
         }
-
-
-        //Recuperation des données de l'utilisateur
-        //Affichage des courses
-
-
 
     }
 

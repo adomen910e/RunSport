@@ -8,6 +8,6 @@
     <color name="display_background">#000</color>
 
     <color name="colorOn">#F57C00</color>
-    <color name="colorOf">#aaa</color>
+    <color name="colorOf">#DCDCDC</color>
 
 </resources>

@@ -13,8 +13,6 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.TextView;
 
@@ -25,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView tv = (TextView)findViewById(R.id.text_begin);
+        TextView tv = findViewById(R.id.text_begin);
         tv.setGravity(Gravity.CENTER);
 
         Spannable wordtoSpan = new SpannableString("Bienvenue sur RunSport");
@@ -40,12 +38,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void  openConnection(View view) {
+    public void openConnection(View view) {
         Intent intent = new Intent(MainActivity.this, ConnexionProfile.class);
         startActivity(intent);
     }
 
-    public void  openCreation(View view) {
+    public void openCreation(View view) {
         Intent intent = new Intent(MainActivity.this, CreationProfile.class);
         startActivity(intent);
     }

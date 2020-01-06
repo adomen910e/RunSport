@@ -40,15 +40,9 @@
             android:textColor="#ffffff"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/txtContinueLocation"
+        <Space
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:gravity="center"
-            android:textColor="#000" />
+            android:layout_height="wrap_content" />
 
         <fragment
             android:id="@+id/map"

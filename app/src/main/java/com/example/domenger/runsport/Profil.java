@@ -15,22 +15,19 @@ import java.util.HashMap;
 
 public class Profil extends AppCompatActivity {
 
-    private DbHandler db;
     private int index_profil;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profil);
 
-        Bundle b = new Bundle();
+        Bundle b;
         b = getIntent().getExtras();
 
-        //TODO: QUAND JE VIENS DE DEMARRER COURSE IL Y A UN BUG A CAUSE DES INTENTS
-
+        assert b != null;
         index_profil = b.getInt("id_profil");
-        int nb_courses = b.getInt("nb_courses");
 
-        db = new DbHandler(this);
+        DbHandler db = new DbHandler(this);
 
         ArrayList<HashMap<String, String>> profil = db.GetUserByUserId(index_profil);
 
